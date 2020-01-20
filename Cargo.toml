@@ -11,3 +11,5 @@ reqwest = { version = "0.10.1", features = ["blocking", "json"] }
 select = ""
 chrono = ""
 directories = "2.0.2"
+toml = ""
+serde = { version = "1.0", features = ["derive"] }
