@@ -1,12 +1,16 @@
 extern crate reqwest;
 extern crate select;
+extern crate toml;
 
 use chrono::{DateTime, Utc};
+use directories::BaseDirs;
 use reqwest::StatusCode;
 use select::document::Document;
 use select::predicate::{And, Any, Child, Class, Element, Name};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fs;
+use std::io::{stdin, stdout, Write};
+use std::{env, fs};
 
 fn main() {
     std::process::exit(match run_app() {
@@ -19,20 +23,107 @@ fn main() {
 }
 
 fn run_app() -> Result<(), ()> {
-    let document =
-        fetch_document("https://open.kattis.com/problems/3dprinter".to_string()).unwrap();
+    // let args: Vec<String> = env::args().collect();
 
-    let (texts, tests) = parse_content(document);
+    // let command = &args[1];
 
-    match setup(texts, tests) {
-        Ok(_) => (),
-        Err(_) => (),
-    }
+    // match command.as_str() {
+    //     "setup" => setup(),
+    //     //"init" => init(),
+    //     _ => setup(),
+    // }
+
+    setup();
+
+    // let document =
+    //     fetch_document("https://open.kattis.com/problems/3dprinter".to_string()).unwrap();
+
+    // let (texts, tests) = parse_content(document);
+
+    // match init(texts, tests) {
+    //     Ok(_) => (),
+    //     Err(_) => (),
+    // }
 
     Ok(())
 }
 
-fn setup(
+static FOLDER_NAME: &str = "Mjau";
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Config {
+    author: String,
+    email: String,
+    default_language: String,
+}
+
+fn setup() -> Result<(), std::io::Error> {
+    if let Some(base_dirs) = BaseDirs::new() {
+        let path = base_dirs.data_local_dir().join(FOLDER_NAME);
+        match local_dir_exists_or_handle(&path) {
+            Ok(v) => println!("Local directory {}.", v),
+            Err(e) => return Err(e),
+        };
+        match local_file_exists_and_or_handle(&path) {
+            Ok(v) => println!("Local settings {}.", v),
+            Err(e) => return Err(e),
+        }
+    };
+
+    Ok(())
+}
+
+fn prompt(prompt: String) -> String {
+    print!("{}: ", prompt);
+    std::io::stdout().flush().unwrap();
+
+    let mut input = String::new();
+    match std::io::stdin().read_line(&mut input) {
+        Ok(2) => "".to_string(),
+        Ok(n) => {
+            println!("{} bytes read", n);
+            println!("{}", input);
+            input
+        }
+        Err(e) => {
+            println!("error: {}", e);
+            "".to_string()
+        }
+    }
+}
+
+fn local_file_exists_and_or_handle(path: &std::path::Path) -> Result<String, std::io::Error> {
+    let mut action_taken: String = "found".to_string();
+
+    let path_to_settings = path.join("settings.toml");
+    if !path_to_settings.exists() {
+        let struct_config = Config {
+            author: prompt("Name: ".to_string()),
+            email: prompt("Email: ".to_string()),
+            default_language: prompt("Language: ".to_string()),
+        };
+
+        let str_config: String = toml::to_string_pretty(&struct_config).unwrap();
+        fs::write(path_to_settings, str_config)?;
+
+        action_taken = "created".to_string();
+    };
+
+    Ok(action_taken)
+}
+
+fn local_dir_exists_or_handle(path: &std::path::Path) -> Result<String, std::io::Error> {
+    let mut action_taken: String = "found".to_string();
+    if !path.exists() {
+        fs::create_dir(path)?;
+
+        action_taken = "created".to_string();
+    };
+
+    Ok(action_taken)
+}
+
+fn init(
     texts: HashMap<String, String>,
     tests: std::vec::Vec<(String, String)>,
 ) -> Result<(), std::io::Error> {
