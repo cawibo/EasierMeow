@@ -12,6 +12,9 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "presentation": {
+                "clear": true // <-- this line
             }
         },
         {
@@ -21,6 +24,9 @@
             "problemMatcher": [
                 "$rustc"
             ],
+            "presentation": {
+                "clear": true // <-- this line
+            }
         },
         {
             "type": "cargo",
