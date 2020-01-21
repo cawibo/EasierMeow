@@ -13,3 +13,5 @@ chrono = ""
 directories = "2.0.2"
 toml = ""
 serde = { version = "1.0", features = ["derive"] }
+lazy_static = ""
+config = ""
