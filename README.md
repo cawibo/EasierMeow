@@ -5,7 +5,7 @@ My first time writing code in Rust. Preq. knowledge include, and is mostly limit
 I've grown tired of having to set up my own testcases when doing Kattis-assignments. In my dreams, this would be a git-like program for setting up and testing Kattis-specific environments. In its current state it is much less.
 Give it a link to a Kattis-problem and it will set up main-file [only Python as of now] and test-files. Thought not very impressive, it is better than doing it manually.
 
-## How to use
+## How to use [Winwdows only]
 1. Create .exe-file from project using Cargo.
 2. Set PATH to .exe-file
 3. Move to appropriate folder and type `mjau init`
