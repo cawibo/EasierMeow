@@ -7,15 +7,17 @@ mod app {
     use std::error::Error;
 
     pub fn run_app() -> Result<(), Box<dyn Error>> {
-        let args: Vec<String> = env::args().collect();
+        let mut args: Vec<String> = env::args().collect();
 
         if args.len() == 1 {
             println!("Please use a command.",);
             return Ok(());
         }
 
+        let meow_args = args.split_off(2);
+
         match args[1].as_str() {
-            "init" => init::init(),
+            "init" => init::init(meow_args),
             _ => println!("Valid commands include: init",),
         }
 
@@ -23,7 +25,6 @@ mod app {
     }
 
     mod init {
-        use chrono::{DateTime, Utc};
         use reqwest::StatusCode;
         use select::document::Document;
         use select::predicate::{And, Any, Child, Class, Element, Name};
@@ -57,15 +58,11 @@ mod app {
         }
 
         fn make_header(data: &KattisData) -> String {
-            let author: String = prompt("Author: ".to_string());
-            let now: DateTime<Utc> = Utc::now();
             let input = &data.input_description;
             let output = &data.output_description;
 
             format!(
-                "#author: {author}\n#date: {now}\n\n#Input: {input}\n\n#Output: {output}\n\n",
-                author = author,
-                now = now,
+                "#Input: {input}\n\n#Output: {output}\n\n",
                 input = input,
                 output = output
             )
@@ -92,14 +89,51 @@ mod app {
             Ok(())
         }
 
-        pub fn init() {
+        use url::Url;
+
+        #[derive(Debug)]
+        struct Args {
+            url: String,
+            language: String,
+        }
+
+        fn handle_url_argument(arg: String) -> String {
+            match Url::parse(arg.as_str()) {
+                Ok(_) => {
+                    println!("accepted as url: {}", &arg);
+                    arg.to_string()
+                }
+                Err(_) => format!("https://open.kattis.com/problems/{}", arg),
+            }
+        }
+
+        fn handle_arguments(args: Vec<String>) -> Args {
+            let url: String = if args.len() < 1 {
+                let tmp = prompt("Problem: ".to_string());
+                handle_url_argument(tmp)
+            } else {
+                handle_url_argument(args[0].to_string())
+            };
+
+            let language: String = if args.len() < 2 {
+                prompt("Language: ".to_string())
+            } else {
+                args[1].to_string()
+            };
+
+            Args { url, language }
+        }
+
+        pub fn init(args: Vec<String>) {
+            let h_args: Args = handle_arguments(args);
+
+            dbg!(&h_args);
+
             let initialization = || -> Result<(), std::io::Error> {
-                let url = prompt("Kattis URL: ".to_string());
-                let language = prompt("Language: ".to_string());
-                let document = fetch_document(url).unwrap();
+                let document = fetch_document(h_args.url).unwrap();
                 let data = parse_document(document).unwrap();
                 let header: String = make_header(&data);
-                write_main_file(header, language)?;
+                write_main_file(header, h_args.language)?;
                 write_test_files(&data.tests)?;
                 Ok(())
             };
