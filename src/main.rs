@@ -18,10 +18,53 @@ mod app {
 
         match args[1].as_str() {
             "init" => init::init(meow_args),
+            "test" => test::test(),
             _ => println!("Valid commands include: init",),
         }
 
         Ok(())
+    }
+
+    mod test {
+        use std::fs;
+        use std::process::Command;
+
+        fn run_test(n: i8) -> bool {
+            let test_name = format!("test{}.in", n);
+            let arg = format!("Python main.py < {}", test_name);
+            let output = Command::new("cmd")
+                .args(&["/C", arg.as_str()])
+                .output()
+                .expect(&format!("failed to run test {}", test_name));
+
+            let res: String = String::from_utf8_lossy(&output.stdout).to_string();
+            let err: String = String::from_utf8_lossy(&output.stderr).to_string();
+            if !output.status.success() {
+                println!("Test {} failed!\n{}", n, err);
+                false
+            } else {
+                let file_name = format!("test{}.out", n);
+                let theirs = fs::read_to_string(file_name).unwrap_or("".to_string());
+
+                if theirs.trim() == res.trim() {
+                    true
+                } else {
+                    false
+                }
+            }
+        }
+
+        pub fn test() {
+            let mut counter = 0;
+            while let Ok(_) = fs::read_to_string(format!("test{}.in", counter)) {
+                match run_test(counter) {
+                    true => println!("Testcase {} succeeded.", counter),
+                    false => println!("Testcase {} failed.", counter),
+                };
+
+                counter += 1;
+            }
+        }
     }
 
     mod init {
