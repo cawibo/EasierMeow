@@ -88,9 +88,9 @@ mod app {
 
             let mut input = String::new();
             match std::io::stdin().read_line(&mut input) {
-                Ok(n) => {
-                    println!("{} bytes read", n);
-                    println!("{}", input);
+                Ok(_n) => {
+                    // println!("{} bytes read", n);
+                    // println!("{}", input);
                     input.trim().to_string()
                 }
                 Err(e) => {
@@ -143,7 +143,7 @@ mod app {
         fn handle_url_argument(arg: String) -> String {
             match Url::parse(arg.as_str()) {
                 Ok(_) => {
-                    println!("accepted as url: {}", &arg);
+                    // println!("accepted as url: {}", &arg);
                     arg.to_string()
                 }
                 Err(_) => format!("https://open.kattis.com/problems/{}", arg),
@@ -158,19 +158,17 @@ mod app {
                 handle_url_argument(args[0].to_string())
             };
 
-            let language: String = if args.len() < 2 {
-                prompt("Language: ".to_string())
-            } else {
-                args[1].to_string()
-            };
-
+            // let language: String = if args.len() < 2 {
+            //     prompt("Language: ".to_string())
+            // } else {
+            //     args[1].to_string()
+            // };
+            let language = "Python".to_string();
             Args { url, language }
         }
 
         pub fn init(args: Vec<String>) {
             let h_args: Args = handle_arguments(args);
-
-            dbg!(&h_args);
 
             let initialization = || -> Result<(), std::io::Error> {
                 let document = fetch_document(h_args.url).unwrap();
