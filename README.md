@@ -1,5 +1,4 @@
 # EasierMeow
-My first time writing code in Rust. Preq. knowledge include, and is mostly limited to, reading the documentation up-and-until structs. It has been quite the experience having to wade through the last couple of years' heated discussions and spontaneous deprecations. I set out to make at least something; and I did.
 
 ## What is EasierMeow
 EasierMeow was made to make 'quick Kattis sessions' easier to manage. In its current state there is functinality for:
